@@ -15,6 +15,7 @@ float dist_min, dist_max, dist_raw, save_dist_raw; // unit: mm
 unsigned long last_sampling_time; // unit: ms
 float scale; // used for pulse duration to distance conversion
 bool led_state;
+int value;
 
 void setup() {
 // initialize GPIO pins
@@ -30,6 +31,7 @@ void setup() {
   dist_raw = 0.0; // raw distance output from USS (unit: mm)  
   scale = 0.001 * 0.5 * SND_VEL;
   led_state = false;
+  value = 0;
 // initialize serial port
   Serial.begin(57600);
 
@@ -51,20 +53,21 @@ void loop() {
   Serial.print(dist_raw);
   Serial.print(",");
   Serial.println("Max:400");
-
-// turn on the LED if the distance is between dist_min and dist_max
-  if((dist_raw < dist_min || dist_raw > dist_max) || led_state){
+  
+  if(led_state){
     analogWrite(PIN_LED, 255);
   }
-  else if(dist_raw <= 150 || dist_raw >= 250){
-    analogWrite(PIN_LED, 170);
+  else{
+    if(dist_raw < 200){
+      value = map(dist_raw, 200, 300, 255, 0);  
+    }
+    else {
+      value = map(dist_raw, 100, 200, 0, 255);  
+    }
+    analogWrite(PIN_LED, value);
   }
-  else {
-    analogWrite(PIN_LED, 0);
-  }
-// do something here
-  //delay(50); // Assume that it takes 50ms to do something.
-  
+
+
 // update last sampling time
   last_sampling_time += INTERVAL;
 }
