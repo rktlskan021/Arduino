@@ -8,7 +8,7 @@
 #define INTERVAL 25 // sampling interval (unit: ms)
 #define _DIST_MIN 100 // minimum distance to be measured (unit: mm)
 #define _DIST_MAX 300 // maximum distance to be measured (unit: mm)
-#define MA 30 // moving average filter
+#define MA 3 // moving average filter
 
 // global variables
 float timeout; // unit: us
