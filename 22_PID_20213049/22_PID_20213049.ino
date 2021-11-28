@@ -65,10 +65,10 @@ float error_curr, error_prev, control, P_term, I_term, D_term;
 float D_termS;
 
 // Filter
-#define _INTERVAL_DIST 30  // DELAY_MICROS * samples_num^2 의 값이 최종 거리측정 인터벌임. 넉넉하게 30ms 잡음.
-#define DELAY_MICROS  1500 // 필터에 넣을 샘플값을 측정하는 딜레이(고정값!)
-float filtered_dist;       // 최종 측정된 거리값을 넣을 변수. loop()안에 filtered_dist = filtered_ir_distance(); 형태로 사용하면 됨.
-float samples_num = 3;     // 스파이크 제거를 위한 부분필터에 샘플을 몇개 측정할 것인지. 3개로 충분함! 가능하면 수정하지 말 것.
+#define _INTERVAL_DIST 30
+#define DELAY_MICROS  1500
+float filtered_dist;
+float samples_num = 3;  
 
 void setup() {
   // initialize GPIO pins for LED and attach servo 
@@ -145,9 +145,6 @@ void loop() {  // Event generator
 
     //update error_prev
     error_prev = error_curr;
-
-    //D_term이 너무 커서 Serial 포트에는 800이 넘어가지 않도록
-    //Serial 용 변수를 하나 만들겠습니다.
     D_termS = D_term;
     if (D_termS > 800) D_termS = 800;
 
@@ -207,7 +204,7 @@ float ir_distance(void){ // return value unit: mm
   return val;
 }
 
-float under_noise_filter(void){ // 아래로 떨어지는 형태의 스파이크를 제거해주는 필터
+float under_noise_filter(void){
   int currReading;
   int largestReading = 0;
   for (int i = 0; i < samples_num; i++) {
@@ -222,15 +219,15 @@ float under_noise_filter(void){ // 아래로 떨어지는 형태의 스파이크
   return largestReading;
 }
 
-float filtered_ir_distance(void){ // 아래로 떨어지는 형태의 스파이크를 제거 후, 위로 치솟는 스파이크를 제거하고 EMA필터를 적용함.
-  // under_noise_filter를 통과한 값을 upper_nosie_filter에 넣어 최종 값이 나옴.
+float filtered_ir_distance(void){
+
   int currReading;
   int lowestReading = 1024;
   for (int i = 0; i < samples_num; i++) {
     currReading = under_noise_filter();
     if (currReading < lowestReading) { lowestReading = currReading; }
   }
-  // ema 필터 추가
+
   dist_ema = _DIST_ALPHA*lowestReading + (1-_DIST_ALPHA)*dist_ema;
   return dist_ema;
 }
